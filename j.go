@@ -167,8 +167,4 @@ func main() {
 
 	fmt.Fprintf(out, "%s\n", data)
 
-	return
-
-	flag.Usage()
-
 }
