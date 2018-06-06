@@ -53,18 +53,18 @@ word is a key=value or key@value`)
 }
 
 func GuessValue(input string) interface{} {
+	// try int
+	i, err := strconv.ParseInt(input, 0, 64)
+	if err == nil {
+		return i
+	}
+
 	// try bool first if -B is not set
 	if !boolflag {
 		b, err := strconv.ParseBool(input)
 		if err == nil {
 			return b
 		}
-	}
-
-	// try int
-	i, err := strconv.ParseInt(input, 0, 64)
-	if err == nil {
-		return i
 	}
 
 	//try float
@@ -75,6 +75,24 @@ func GuessValue(input string) interface{} {
 
 	//give up
 	return input
+}
+
+func ToJson(input []string) ([]byte, error) {
+	if arrayflag {
+		return JsonArrayEncode(input)
+	} else {
+		return JsonKeyValEncode(input)
+	}
+}
+
+func JsonArrayEncode(input []string) ([]byte, error) {
+	inputarray := make([]interface{}, len(input), len(input))
+
+	for i, args := range input {
+		inputarray[i] = GuessValue(args)
+	}
+
+	return JsonEncode(inputarray)
 }
 
 func JsonKeyValEncode(input []string) ([]byte, error) {
@@ -138,12 +156,17 @@ func main() {
 		input = ReadInput()
 	}
 
-	data, err := JsonKeyValEncode(input)
+	var data []byte
+
+	data, err := ToJson(input)
+
 	if err != nil {
 		log.Fatalf("JSON Marshalling failed: %s", err)
 		return
 	}
+
 	fmt.Fprintf(out, "%s\n", data)
+
 	return
 
 	flag.Usage()
