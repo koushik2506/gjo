@@ -17,6 +17,7 @@ func TestJo(t *testing.T) {
 	}{
 		{true, false, false, false, false, "1\n2\n3", "[1,2,3]"},
 		{false, false, false, false, false, "name=clark\nage=28\nsuperman=true", `{"age":28,"name":"clark","superman":true}`},
+		{false, false, false, false, false, "name=x\nvalue=", `{"name":"x","value":null}`},
 	}
 
 	for _, test := range tests {

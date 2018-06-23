@@ -73,6 +73,11 @@ func GuessValue(input string) interface{} {
 		return f
 	}
 
+	// Empty strings are a short cut to null
+	if len(input) == 0 {
+		return nil
+	}
+
 	//give up
 	return input
 }
@@ -99,10 +104,13 @@ func JsonKeyValEncode(input []string) ([]byte, error) {
 	inputmap := make(map[string]interface{})
 	for _, args := range input {
 		kvArray := strings.Split(args, "=")
-		if len(kvArray) != 2 {
+		if len(kvArray) == 2 {
+			inputmap[kvArray[0]] = GuessValue(kvArray[1])
+		} else if len(kvArray) == 1 {
+			inputmap[kvArray[0]] = nil
+		} else {
 			return nil, fmt.Errorf("Invalid key/value combination")
 		}
-		inputmap[kvArray[0]] = GuessValue(kvArray[1])
 	}
 
 	return JsonEncode(inputmap)
