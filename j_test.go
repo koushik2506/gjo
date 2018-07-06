@@ -27,7 +27,7 @@ func TestJo(t *testing.T) {
 		jsonverflag = test.jsonverflag
 		prettyflag = test.prettyflag
 
-		outputbuf, _ := ToJson(strings.Split(test.input, "\n"))
+		outputbuf, _ := tojson(strings.Split(test.input, "\n"))
 
 		if output := strings.Trim(string(outputbuf), " \n"); output != test.output {
 			t.Errorf("Got %v, expected: %v\n", output, test.output)

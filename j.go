@@ -17,14 +17,14 @@ import (
 	"strings"
 )
 
-type Version struct {
+type version struct {
 	Program string `json:"program"`
 	Author  string `json:"author"`
 	Repo    string `json:"repo"`
 	Version string `json:"version"`
 }
 
-var version Version = Version{Program: "gjo", Author: "nkoushik", Repo: "https://github.com/koushik2506/gjo", Version: "0.1"}
+var ver = version{Program: "gjo", Author: "nkoushik", Repo: "https://github.com/koushik2506/gjo", Version: "0.1"}
 
 var out io.Writer = os.Stdout
 var err io.Writer = os.Stderr
@@ -52,7 +52,7 @@ word is a key=value or key@value`)
 
 }
 
-func GuessValue(input string) interface{} {
+func guessValue(input string) interface{} {
 	// try int
 	i, err := strconv.ParseInt(input, 0, 64)
 	if err == nil {
@@ -82,30 +82,30 @@ func GuessValue(input string) interface{} {
 	return input
 }
 
-func ToJson(input []string) ([]byte, error) {
+func tojson(input []string) ([]byte, error) {
 	if arrayflag {
-		return JsonArrayEncode(input)
-	} else {
-		return JsonKeyValEncode(input)
+		return jsonArrayEncode(input)
 	}
+	return jsonKeyValEncode(input)
+
 }
 
-func JsonArrayEncode(input []string) ([]byte, error) {
+func jsonArrayEncode(input []string) ([]byte, error) {
 	inputarray := make([]interface{}, len(input), len(input))
 
 	for i, args := range input {
-		inputarray[i] = GuessValue(args)
+		inputarray[i] = guessValue(args)
 	}
 
-	return JsonEncode(inputarray)
+	return jsonEncode(inputarray)
 }
 
-func JsonKeyValEncode(input []string) ([]byte, error) {
+func jsonKeyValEncode(input []string) ([]byte, error) {
 	inputmap := make(map[string]interface{})
 	for _, args := range input {
 		kvArray := strings.Split(args, "=")
 		if len(kvArray) == 2 {
-			inputmap[kvArray[0]] = GuessValue(kvArray[1])
+			inputmap[kvArray[0]] = guessValue(kvArray[1])
 		} else if len(kvArray) == 1 {
 			inputmap[kvArray[0]] = nil
 		} else {
@@ -113,20 +113,20 @@ func JsonKeyValEncode(input []string) ([]byte, error) {
 		}
 	}
 
-	return JsonEncode(inputmap)
+	return jsonEncode(inputmap)
 }
 
-func JsonEncode(input interface{}) ([]byte, error) {
+func jsonEncode(input interface{}) ([]byte, error) {
 	if prettyflag {
 		data, err := json.MarshalIndent(input, "", "   ")
 		return data, err
-	} else {
-		data, err := json.Marshal(input)
-		return data, err
 	}
+
+	data, err := json.Marshal(input)
+	return data, err
 }
 
-func ReadInput() []string {
+func readInput() []string {
 	scanner := bufio.NewScanner(in)
 
 	var inputstr []string
@@ -142,12 +142,12 @@ func main() {
 	flag.Parse()
 
 	if verflag {
-		fmt.Fprintf(out, "%s %s\n", version.Program, version.Version)
+		fmt.Fprintf(out, "%s %s\n", ver.Program, ver.Version)
 		return
 	}
 
 	if jsonverflag {
-		data, err := JsonEncode(version)
+		data, err := jsonEncode(ver)
 		if err != nil {
 			log.Fatalf("JSON Marshalling failed: %s", err)
 			return
@@ -161,12 +161,12 @@ func main() {
 	if flag.NArg() > 0 {
 		input = flag.Args()
 	} else {
-		input = ReadInput()
+		input = readInput()
 	}
 
 	var data []byte
 
-	data, err := ToJson(input)
+	data, err := tojson(input)
 
 	if err != nil {
 		log.Fatalf("JSON Marshalling failed: %s", err)
